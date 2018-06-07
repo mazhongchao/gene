@@ -12,7 +12,7 @@ class PHP(dna.DNA):
     desc = "General-purpose scripting language"
     homepage = "https://secure.php.net/"
     sha256 = "a9f30daf6af82ac02e692465cfd65b04a60d56106c961926e264d2621d313f0e"
-    preins_items = {"centos":["openssl-devel.x86_64", "bzip2-devel.x86_64", "libcurl-devel.x86_64",
+    preins_items = {"centos":["bison-devel", "re2c-devel", "systemtap-sdt-devel", "openssl-devel.x86_64", "bzip2-devel.x86_64", "libcurl-devel.x86_64",
                     "libpng-devel.x86_64", "freetype-devel.x86_64", "libjpeg-turbo-devel.x86_64",
                     "libmcrypt-devel.x86_64", "unixODBC-devel.x86_64", "unixODBC.x86_64", "libxml2-devel"],
                     "ubuntu":["libxml2-dev", "libssl-dev", "libcurl4-openssl-dev", "libbz2-dev",
@@ -26,7 +26,7 @@ class PHP(dna.DNA):
     def install(self):
         self.file_download()
         if self.file_verify():
-            # self._before_install()
+            self._before_install()
             self._install()
             self._after_install()
 
@@ -47,7 +47,6 @@ class PHP(dna.DNA):
                 --enable-exif \
                 --enable-ftp \
                 --enable-fpm \
-                --enable-gd-native-ttf \
                 --enable-inline-optimization \
                 --enable-intl \
                 --enable-mbregex \
@@ -93,9 +92,12 @@ class PHP(dna.DNA):
         os.chdir(self._inter("{libtag}"))
 
         args = self._inter(args)
+        os.system(self._inter("rm /tmp/gene-install-{libtag}.configure.log"))
+        os.system(self._inter("echo ./configure {args} >> /tmp/gene-install-{libtag}.configure.log"))
         os.system(self._inter("./configure {args} >> /tmp/gene-install-{libtag}.configure.log"))
         os.system(self._inter("make"))
-        os.system(self._inter("make isntall >> /tmp/gene-install-{libtag}.install.log"))
+        os.system(self._inter("rm /tmp/gene-install-{libtag}.install.log"))
+        os.system(self._inter("make install >> /tmp/gene-install-{libtag}.install.log"))
 
         self._after_install();
 
@@ -183,14 +185,12 @@ class PHP(dna.DNA):
     def _set_starup(self):
         libtag = self.libtag
         if self.os == "centos":
-            cmd = "cp /usr/local/src/gene_downdloads/{libtag}/sapi/fpm/php-fpm.service /usr/lib/systemd/system"
-            os.system(cmd)
+            os.system(self._inter("cp /usr/local/src/gene_downdloads/{libtag}/sapi/fpm/php-fpm.service /usr/lib/systemd/system"))
             # cmd = "ln -s /usr/lib/systemd/system/php-fpm.service /etc/systemd/system/multi-user.target.wants/php-fpm.serivce"
             # os.system(cmd)
 
         if self.os == "ubuntu":
-            cmd = "cp /usr/local/src/gene_downdloads/{libtag}/sapi/fpm/init.d.php-fpm /etc/init.d/php-fpm.service"
-            os.system(cmd)
+            os.system("cp /usr/local/src/gene_downdloads/{libtag}/sapi/fpm/init.d.php-fpm /etc/init.d/php-fpm.service")
             cmd = "chmod 755 /etc/init.d/php-fpm.serivce"
             os.system(cmd)
 
