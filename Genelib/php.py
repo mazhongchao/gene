@@ -120,6 +120,7 @@ class PHP(dna.DNA):
     def file_verify(self):
         libtag = self.libtag
         download_path = self.download_path
+        download_file = self._inter("{download_path}/{libtag}.tar.gz")
         BUF_SIZE = 65536
         print "\033[1;37m===>\033[0m Verfiying"
 
