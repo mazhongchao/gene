@@ -35,59 +35,59 @@ class PHP(dna.DNA):
         (lib, version) = libtag.split("-") # lib="php" version="7.2.5"
         prefix = self.install_path + self._inter("/{lib}/{version}")
         config_path = self.base_path + self._inter("/etc/{lib}/") + version[0:3]
-        args = """--prefix={prefix}
-                --with-config-file-path={config_path}
-                --with-config-file-scan-dir={config_path}/conf.d
-                --with-fpm-user=www
-                --with-fpm-group=www
-                --enable-bcmath
-                --enable-calendar
-                --enable-dba
-                --enable-dtrace
-                --enable-exif
-                --enable-ftp
-                --enable-fpm
-                --enable-gd-native-ttf
-                --enable-inline-optimization
-                --enable-intl
-                --enable-mbregex
-                --enable-mbstring
-                --enable-mysqlnd
-                --enable-opcache-file
-                --enable-pcntl
-                --enable-shmop
-                --enable-soap
-                --enable-sockets
-                --enable-sysvsem
-                --enable-sysvshm
-                --enable-zip
-                --disable-debug
-                --disable-rpath
-                --with-bz2
-                --with-curl
-                --with-freetype-dir=/usr/include/freetype2/freetype
-                --with-gd
-                --with-gettext
-                --with-iconv
-                --with-jpeg-dir
-                --with-libxml-dir
-                --with-mhash
-                --with-mysql-sock=/tmp/mysql.sock
-                --with-mysqli=mysqlnd
-                --with-openssl
-                --with-pdo-mysql=mysqlnd
-                --with-pdo-odbc=unixODBC,/usr
-                --with-pcre-regex
-                --with-png-dir
-                --with-xmlrpc
-                --with-xsl
-                --with-unixODBC=/usr
-                --with-zlib
+        args = """--prefix={prefix} \
+                --with-config-file-path={config_path} \
+                --with-config-file-scan-dir={config_path}/conf.d \
+                --with-fpm-user=www \
+                --with-fpm-group=www \
+                --enable-bcmath \
+                --enable-calendar \
+                --enable-dba \
+                --enable-dtrace \
+                --enable-exif \
+                --enable-ftp \
+                --enable-fpm \
+                --enable-gd-native-ttf \
+                --enable-inline-optimization \
+                --enable-intl \
+                --enable-mbregex \
+                --enable-mbstring \
+                --enable-mysqlnd \
+                --enable-opcache-file \
+                --enable-pcntl \
+                --enable-shmop \
+                --enable-soap \
+                --enable-sockets \
+                --enable-sysvsem \
+                --enable-sysvshm \
+                --enable-zip \
+                --disable-debug \
+                --disable-rpath \
+                --with-bz2 \
+                --with-curl \
+                --with-freetype-dir=/usr/include/freetype2/freetype \
+                --with-gd \
+                --with-gettext \
+                --with-iconv \
+                --with-jpeg-dir \
+                --with-libxml-dir \
+                --with-mhash \
+                --with-mysql-sock=/tmp/mysql.sock \
+                --with-mysqli=mysqlnd \
+                --with-openssl \
+                --with-pdo-mysql=mysqlnd \
+                --with-pdo-odbc=unixODBC,/usr \
+                --with-pcre-regex \
+                --with-png-dir \
+                --with-xmlrpc \
+                --with-xsl \
+                --with-unixODBC=/usr \
+                --with-zlib \
                 --without-pear"""
 
         print("\033[1;37m===>\033[0m Installing " + self.libtag)
-        download_path = self.download_path
 
+        download_path = self.download_path
         os.system(self._inter("cd {download_path}"))
         os.system(self._inter("tar xzf {libtag}.tar.gz"))
         os.system(self._inter("cd {libtag}"))
@@ -106,12 +106,15 @@ class PHP(dna.DNA):
         if not os.path.exists(download_path):
             os.makedirs(download_path)
 
-        if os.access(self._inter("{download_path}/{libtag}.tar.gz"), os.F_OK):
+        download_file = self._inter("{download_path}/{libtag}.tar.gz")
+
+        if os.access(download_file, os.F_OK):
+            print "\033[1;37m===>\033[0m File is exists in: " + download_file
             return
 
         print "\033[1;37m===>\033[0m Downloading " + libtag + " from " + self.url
         f = urllib2.urlopen(self.url)
-        with open(self._inter("{download_path}/{libtag}.tar.gz"), "wb") as code:
+        with open(download_file, "wb") as code:
             code.write(f.read())
 
     def file_verify(self):
@@ -121,7 +124,7 @@ class PHP(dna.DNA):
         print "\033[1;37m===>\033[0m Verfiying"
 
         sha256 = hashlib.sha256()
-        with open(self._inter("{download_path}/{libtag}.tar.gz"), "rb") as f:
+        with open(download_file, "rb") as f:
             while True:
                 data = f.read(BUF_SIZE)
                 if not data:
@@ -131,6 +134,7 @@ class PHP(dna.DNA):
 
         fhexdigest = sha256.hexdigest()
         if fhexdigest == self.sha256:
+            print "\033[1;32m===>\033[0m Verifed"
             return True
         else:
             print "\033[1;31m===>\033[0m Verify file " + self.libtag + ".tar.gz faild for " + fhexdigest
@@ -140,7 +144,6 @@ class PHP(dna.DNA):
 
     def _before_install(self):
         print "\033[1;37m===>\033[0m Isntalling dependency lib:"
-        cmd = 'yum -y install '
         item_list = self.preins_items[self.os]
 
         s = self._exec("lsb_release -d")
@@ -148,8 +151,9 @@ class PHP(dna.DNA):
             self.os = 'ubuntu'
             cmd = 'apt-get -y install '
             item_list = self.preins_items[self.os]
+
         for lib in item_list:
-            cmd = cmd + lib
+            cmd = 'yum -y install ' + lib
             print "    >>> " + cmd
             self._exec(cmd)
 
