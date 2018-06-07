@@ -166,13 +166,13 @@ class PHP(dna.DNA):
         self._install_detail()
 
     def _set_starup(self):
-        if self.os = "centos":
+        if self.os == "centos":
             cmd = "cp /usr/local/src/gene_downdloads/{libtag}/sapi/fpm/php-fpm.service /usr/lib/systemd/system"
             os.system(cmd)
             # cmd = "ln -s /usr/lib/systemd/system/php-fpm.service /etc/systemd/system/multi-user.target.wants/php-fpm.serivce"
             # os.system(cmd)
 
-        if self.os = "ubuntu":
+        if self.os == "ubuntu":
             cmd = "cp /usr/local/src/gene_downdloads/{libtag}/sapi/fpm/init.d.php-fpm /etc/init.d/php-fpm.service"
             os.system(cmd)
             cmd = "chmod 755 /etc/init.d/php-fpm.serivce"
