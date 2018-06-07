@@ -122,10 +122,11 @@ class PHP(dna.DNA):
                 if not data:
                     break
 
-                if hashlib.sha256(data) == self.sha256:
+                fhexdigest = hashlib.sha256(data).hexdigest()
+                if fhexdigest == self.sha256:
                     return True
                 else:
-                    print "\033[1;37m===>\033[0m Verify file " + self.libtag + ".tar.gz faild for " + hashlib.sha256(data)
+                    print "\033[1;31m===>\033[0m Verify file " + self.libtag + ".tar.gz faild for " + fhexdigest
                     return False
         return False
 
@@ -182,7 +183,7 @@ class PHP(dna.DNA):
         libtag = self.libtag
         (lib, version) = libtag.split("-")
         config_path = self.base_path + self._inter("/etc/{lib}/") + version[0:3]
-        print("\033[1;32m===>\033[0m " + self.libtag + " has been installed successfuly. Detail infomation: ")
+        print "\033[1;32m===>\033[0m " + self.libtag + " has been installed successfuly. Detail infomation: "
         ss = """
               Installed Path: /usr/local/opt/{libtag}
             Config File Path: /usr/local/etc/{config_path}
