@@ -7,15 +7,16 @@ import hashlib
 import dna
 
 class PHP(dna.DNA):
-    libtag = "php-7.2.5"
-    url = "https://php.net/get/php-7.2.5.tar.xz/from/this/mirror"
+    libtag = "php-7.2.6"
+    url = "http://cn.php.net/distributions/php-7.2.6.tar.gz"
     desc = "General-purpose scripting language"
     homepage = "https://secure.php.net/"
-    sha256 = "af70a33b3f7a51510467199b39af151333fbbe4cc21923bad9c7cf64268cddb2"
+    sha256 = "a9f30daf6af82ac02e692465cfd65b04a60d56106c961926e264d2621d313f0e"
     preins_items = {"centos":["openssl-devel.x86_64", "bzip2-devel.x86_64", "libcurl-devel.x86_64",
                     "libpng-devel.x86_64", "freetype-devel.x86_64", "libjpeg-turbo-devel.x86_64",
                     "libmcrypt-devel.x86_64", "unixODBC-devel.x86_64", "unixODBC.x86_64", "libxml2-devel"],
-                    "ubuntu":[]
+                    "ubuntu":["libxml2-dev", "libssl-dev", "libcurl4-openssl-dev", "libbz2-dev",
+                    "libjpeg-dev", "libpng-dev", "mcrypt-dev", "libfreetype6-dev", "unixodbc unixodec-dev"]
                     }
     os = 'centos'
 
@@ -84,10 +85,11 @@ class PHP(dna.DNA):
                 --with-zlib
                 --without-pear"""
 
-        print("===> Installing " + self.libtag)
-        os.system("cd /var/tmp/gene")
+        print("\033[1;37m===>\033[0m Installing " + self.libtag)
+        download_path = self.download_path
 
-        os.system(self._inter("tar xzf {libtag}.tar.xz"))
+        os.system(self._inter("cd {download_path}"))
+        os.system(self._inter("tar xzf {libtag}.tar.gz"))
         os.system(self._inter("cd {libtag}"))
 
         args = self._inter(args)
@@ -104,17 +106,17 @@ class PHP(dna.DNA):
         if not os.path.exists(download_path):
             os.makedirs(download_path)
 
-        print "===> Downloading " + libtag + "from " + self.url
+        print "\033[1;37m===>\033[0m Downloading " + libtag + " from " + self.url
         f = urllib2.urlopen(self.url)
-        with open(self._inter("{download_path}/{libtag}.tar.xz", "wb")) as code:
+        with open(self._inter("{download_path}/{libtag}.tar.gz", "wb")) as code:
             code.write(f.read())
 
     def file_verify(self):
         libtag = self.libtag
         download_path = self.download_path
         BUF_SIZE = 65536
-        print "===> Verfiying"
-        with open(self._inter("{download_path}/{libtag}.tar.xz", "rb")) as f:
+        print "\033[1;37m===>\033[0m Verfiying"
+        with open(self._inter("{download_path}/{libtag}.tar.gz", "rb")) as f:
             while True:
                 data = f.read(BUF_SIZE)
                 if not data:
@@ -123,15 +125,12 @@ class PHP(dna.DNA):
                 if hashlib.sha256(data) == self.sha256:
                     return True
                 else:
-                    print "===> Verify file " + self.lib + ".tar.xz faild for " + hashlib.sha256(data)
+                    print "\033[1;37m===>\033[0m Verify file " + self.libtag + ".tar.gz faild for " + hashlib.sha256(data)
                     return False
         return False
 
-    def echo(self):
-        print "Test....PHP"
-
     def _before_install(self):
-        print "===> Isntalling dependency lib"
+        print "\033[1;37m===>\033[0m Isntalling dependency lib:"
         cmd = 'yum -y install '
         item_list = self.preins_items[self.os]
 
@@ -153,17 +152,55 @@ class PHP(dna.DNA):
         for (dirpath, dirnames, binfiles) in os.walk(self._inter("{path}/bin")):
             bin_list.extend(binfiles)
             for file in bin_list:
-                cmd = self._inter("ln -s {path}/bin/{file} /usr/bin/{file}")
+                cmd = self._inter("ln -s {path}/bin/{file} /usr/local/bin/{file}")
                 os.system(cmd)
 
         sbin_list = []
         for (dirpath, dirnames, sbinfiles) in os.walk(self._inter("{path}/sbin")):
             sbin_list.extend(sbinfiles)
             for file in sbin_list:
-                cmd = self._inter("ln -s {path}/sbin/{file} /usr/sbin/{file}")
+                cmd = self._inter("ln -s {path}/sbin/{file} /usr/local/sbin/{file}")
                 os.system(cmd)
 
-        print("===> " + self.libtag + "has been installed successfuly. Detail infomation: ")
+        self._set_starup()
+        self._install_detail()
 
+    def _set_starup(self):
+        if self.os = "centos":
+            cmd = "cp /usr/local/src/gene_downdloads/{libtag}/sapi/fpm/php-fpm.service /usr/lib/systemd/system"
+            os.system(cmd)
+            # cmd = "ln -s /usr/lib/systemd/system/php-fpm.service /etc/systemd/system/multi-user.target.wants/php-fpm.serivce"
+            # os.system(cmd)
 
+        if self.os = "ubuntu":
+            cmd = "cp /usr/local/src/gene_downdloads/{libtag}/sapi/fpm/init.d.php-fpm /etc/init.d/php-fpm.service"
+            os.system(cmd)
+            cmd = "chmod 755 /etc/init.d/php-fpm.serivce"
+            os.system(cmd)
+
+    def _install_detail(self):
+        libtag = self.libtag
+        (lib, version) = libtag.split("-")
+        config_path = self.base_path + self._inter("/etc/{lib}/") + version[0:3]
+        print("\033[1;32m===>\033[0m " + self.libtag + " has been installed successfuly. Detail infomation: ")
+        ss = """
+              Installed Path: /usr/local/opt/{libtag}
+            Config File Path: /usr/local/etc/{config_path}
+             Startup Service: /usr/lib/systemd/system/php-fpm.service (for CentOS)
+                              /etc/init.d/php-fpm.serivce (for Ubuntu)
+
+            To start php-fpm:
+                sudo systemctl start php-fpm.service(for CentOS)
+                /etc/init.d/php-fpm.serivce start(for Ubuntu)
+
+            Or, just run: php-fpm & (be sure that path '/usr/local/sbin' in $PATH)
+
+            If you want to start php-fpm automatically as a background service, just run:
+                sudo systemctl enable php-fpm.service(for CentOS)
+                sudo update-rc.d test defaults 95(for Ubuntu)
+        """
+        print ss
+
+    def echo(self):
+        print "Test....PHP"
 

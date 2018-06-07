@@ -13,8 +13,8 @@ def main():
     elif len(args) == 3 and args[1] == 'install':
         key = args[2]
         if key in alias.libalias:
-            c = alias.libalias[key]
             package = importlib.import_module("Genelib."+key)
+            c = alias.libalias[key]['class']
             tmp_class = getattr(package, c)
             lib = tmp_class()
             lib.install()
