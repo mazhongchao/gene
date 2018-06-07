@@ -26,7 +26,7 @@ class PHP(dna.DNA):
     def install(self):
         self.file_download()
         if self.file_verify():
-            self._before_install()
+            # self._before_install()
             self._install()
             self._after_install()
 
@@ -88,9 +88,9 @@ class PHP(dna.DNA):
         print("\033[1;37m===>\033[0m Installing " + self.libtag)
 
         download_path = self.download_path
-        os.system(self._inter("cd {download_path}"))
+        os.chdir(self._inter("{download_path}"))
         os.system(self._inter("tar xzf {libtag}.tar.gz"))
-        os.system(self._inter("cd {libtag}"))
+        os.chdir(self._inter("{libtag}"))
 
         args = self._inter(args)
         os.system(self._inter("./configure {args} >> /tmp/gene-install-{libtag}.configure.log"))
@@ -159,6 +159,7 @@ class PHP(dna.DNA):
             self._exec(cmd)
 
     def _after_install(self):
+        libtag = self.libtag
         (lib, version) = libtag.split("-")
         path = self.install_path + self._inter("/{lib}/{version}")
 
@@ -180,6 +181,7 @@ class PHP(dna.DNA):
         self._install_detail()
 
     def _set_starup(self):
+        libtag = self.libtag
         if self.os == "centos":
             cmd = "cp /usr/local/src/gene_downdloads/{libtag}/sapi/fpm/php-fpm.service /usr/lib/systemd/system"
             os.system(cmd)
