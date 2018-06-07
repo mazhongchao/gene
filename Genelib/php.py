@@ -108,7 +108,7 @@ class PHP(dna.DNA):
 
         print "\033[1;37m===>\033[0m Downloading " + libtag + " from " + self.url
         f = urllib2.urlopen(self.url)
-        with open(self._inter("{download_path}/{libtag}.tar.gz", "wb")) as code:
+        with open(self._inter("{download_path}/{libtag}.tar.gz"), "wb") as code:
             code.write(f.read())
 
     def file_verify(self):
@@ -116,7 +116,7 @@ class PHP(dna.DNA):
         download_path = self.download_path
         BUF_SIZE = 65536
         print "\033[1;37m===>\033[0m Verfiying"
-        with open(self._inter("{download_path}/{libtag}.tar.gz", "rb")) as f:
+        with open(self._inter("{download_path}/{libtag}.tar.gz"), "rb") as f:
             while True:
                 data = f.read(BUF_SIZE)
                 if not data:
