@@ -106,6 +106,9 @@ class PHP(dna.DNA):
         if not os.path.exists(download_path):
             os.makedirs(download_path)
 
+        if os.access(self._inter("{download_path}/{libtag}.tar.gz"), os.F_OK):
+            return
+
         print "\033[1;37m===>\033[0m Downloading " + libtag + " from " + self.url
         f = urllib2.urlopen(self.url)
         with open(self._inter("{download_path}/{libtag}.tar.gz"), "wb") as code:
@@ -116,18 +119,23 @@ class PHP(dna.DNA):
         download_path = self.download_path
         BUF_SIZE = 65536
         print "\033[1;37m===>\033[0m Verfiying"
+
+        sha256 = hashlib.sha256()
         with open(self._inter("{download_path}/{libtag}.tar.gz"), "rb") as f:
             while True:
                 data = f.read(BUF_SIZE)
                 if not data:
                     break
 
-                fhexdigest = hashlib.sha256(data).hexdigest()
-                if fhexdigest == self.sha256:
-                    return True
-                else:
-                    print "\033[1;31m===>\033[0m Verify file " + self.libtag + ".tar.gz faild for " + fhexdigest
-                    return False
+                sha256.update(data)
+
+        fhexdigest = sha256.hexdigest()
+        if fhexdigest == self.sha256:
+            return True
+        else:
+            print "\033[1;31m===>\033[0m Verify file " + self.libtag + ".tar.gz faild for " + fhexdigest
+            return False
+
         return False
 
     def _before_install(self):
